@@ -68,7 +68,7 @@ dispatch <- function(sim_servers, mean_arrival=8, stdev_arrival=5) {
 simservers <- setClass("simservers", slots=c(available="vector", timers="vector"))
 
 
-simulation_queue_size <- function(day, servers=3) {
+simulation_day_queue_size <- function(day, servers=3) {
   # Defining constants
   mean_attendance <- 8
   stdev_attendance <- 5
@@ -82,19 +82,20 @@ simulation_queue_size <- function(day, servers=3) {
   minute <- 1
   
   # Generating Data Frame
-  dataset <- data.frame(matrix(ncol = 6, nrow = 0))
-  colnames(dataset) <- c("minute", "servers_available", "dispatching_time", "in_waiting_queue", "new_arrival", "next_arrival")
+  # dataset <- data.frame(matrix(ncol = 6, nrow = 0))
+  # colnames(dataset) <- c("minute", "servers_available", "dispatching_time", "in_waiting_queue", "new_arrival", "next_arrival")
   
   # Simulation variables
   waiting <- 0
   arrival_queue <- c()
+  total_waiting <- 0
   
   sim_servers <- simservers(available = rep_len(T, servers), timers=rep_len(0, servers))
   
   # Running initial conditions
   first_arrival <- sample(arrival_times, 1, prob = arrival_probabilities)
-  print("FIRST ARRIVAL:")
-  print(first_arrival)
+  # print("FIRST ARRIVAL:")
+  # print(first_arrival)
   arrival_queue <- append(arrival_queue, first_arrival)
   
   # Running simulation
@@ -157,21 +158,91 @@ simulation_queue_size <- function(day, servers=3) {
     }
     
     # Filling dataframe
-    dataset[nrow(dataset) + 1, ] = c(
-      minute, 
-      sum(sim_servers@available == T),
-      paste(sim_servers@timers, collapse=" "),
-      waiting,
-      new_arrivals_to_queue, 
-      next_arrival + minute
-    )
+    # dataset[nrow(dataset) + 1, ] = c(
+    #   minute, 
+    #   sum(sim_servers@available == T),
+    #   paste(sim_servers@timers, collapse=" "),
+    #   waiting,
+    #   new_arrivals_to_queue, 
+    #   next_arrival + minute
+    # )
+    
+    # Increasing waiting counter
+    total_waiting <- total_waiting + waiting
     
     # Increasing timer
     minute <- minute + 1
   }
   
-  return(dataset)
+  return(total_waiting)
 }
 
+simulate_week <- function(server){
+  # Initializing constants
+  total_days <- 7
+  
+  days <- c(1:total_days)
+  
+  # Running simulation
+  weekly_waiting_queue_size <- sapply(days,
+         simulation_day_queue_size,
+         servers=server
+  )
+  
+  # Returning week's total queue size
+  week_total_queue_size <- sum(weekly_waiting_queue_size)
+  
+  return(week_total_queue_size)
+}
 
-simulation_queue_size(day = 1, servers = 3)
+# View(simulate_week(server=1))
+
+simulate_week_server<- function(index) {
+  # Initializing constants
+  total_servers <- 7
+  
+  servers <- c(1:total_servers)
+  
+  # Running Simulation
+  weekly_queue_size_per_server <- sapply(servers, simulate_week)
+  
+  return(weekly_queue_size_per_server)
+  
+}
+
+# View(simulate_week_server(index=1))
+
+simulation_problem_one <- function(nsim) {
+  # Initializing constants
+  simulations <- c(1:nsim)
+  
+  # Running simulations
+  weekly_queue_size_per_server_per_simulation <- sapply(simulations, simulate_week_server)
+  
+  # Reconstructing dataframe
+  fixed_dataset <- as.data.frame(t(weekly_queue_size_per_server_per_simulation))
+  
+  # Calculating Averages
+  total_minutes <- 480*7*nsim
+  average_one_server <- sum(fixed_dataset$V1)/total_minutes
+  average_two_server <- sum(fixed_dataset$V2)/total_minutes
+  average_three_server <- sum(fixed_dataset$V3)/total_minutes
+  average_four_server <- sum(fixed_dataset$V4)/total_minutes
+  average_five_server <- sum(fixed_dataset$V5)/total_minutes
+  average_six_server <- sum(fixed_dataset$V6)/total_minutes
+  average_seven_server <- sum(fixed_dataset$V7)/total_minutes
+  
+  # Returning dataframe
+  return(c(
+    average_one_server,
+    average_two_server,
+    average_three_server,
+    average_four_server,
+    average_five_server,
+    average_six_server,
+    average_seven_server
+    )
+  )
+}
+
+View(simulation_problem_one(nsim = 3))
