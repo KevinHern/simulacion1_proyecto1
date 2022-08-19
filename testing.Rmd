@@ -43,6 +43,10 @@ decrease_timer <-function(timer) {
   }
 }
 
+increase_timer <- function(timer) {
+  return(timer+1)
+}
+
 liberate_server <- function(server_timer) {
   if(server_timer == 0) {
     return(T)
@@ -72,9 +76,10 @@ dispatch <- function(sim_servers, mean_arrival=8, stdev_arrival=5) {
 
 # Creating Servers Object
 simservers <- setClass("simservers", slots=c(available="vector", timers="vector"))
+```
 
-
-simulation_queue_size <- function(day, servers=3) {
+```{r}
+simulation_day_queue_size <- function(day, servers=3) {
   # Defining constants
   mean_attendance <- 8
   stdev_attendance <- 5
@@ -82,18 +87,22 @@ simulation_queue_size <- function(day, servers=3) {
   arrival_times <- c(0, 1, 2, 3, 4, 5, 6)
   arrival_probabilities <- day_probabilities(day=day)
   
-  total_minutes <- 480 # 8 hours shift per day
+  total_minutes <- 10 # 8 hours shift per day
   
   # Pivot variables
   minute <- 1
   
   # Generating Data Frame
-  dataset <- data.frame(matrix(ncol = 6, nrow = 0))
-  colnames(dataset) <- c("minute", "servers_available", "dispatching_time", "in_waiting_queue", "new_arrival", "next_arrival")
+  dataset <- data.frame(matrix(ncol = 7, nrow = 0))
+  colnames(dataset) <- c("minute", "servers_available", "dispatching_time", "total_attended", "total_waiting_time", "in_queue" ,"next_arrival")
   
   # Simulation variables
-  waiting <- 0
+  waiting_queue <- c()
+  waiting_queue_timers <- c()
   arrival_queue <- c()
+  
+  total_waiting_time <- 0
+  total_attended <- 0
   
   sim_servers <- simservers(available = rep_len(T, servers), timers=rep_len(0, servers))
   
@@ -108,6 +117,11 @@ simulation_queue_size <- function(day, servers=3) {
     
     ### TIMERS MANIPULATION
     #print("TIMERS MANIPULATION")
+    
+    # Increase waiting queue timers
+    if(length(waiting_queue_timers) > 0) {
+      waiting_queue_timers <- sapply(waiting_queue_timers, increase_timer)
+    }
     
     # Decrease arrival_queue timers
     arrival_queue <- sapply(arrival_queue, decrease_timer)
@@ -144,31 +158,43 @@ simulation_queue_size <- function(day, servers=3) {
     ### ARRIVING AND WAITING
     #print("ARRIVING AND WAITING")
     
-    # Increasing the waiting counter if some counters in arrival_queue have reached 0
-    new_arrival_queue <- arrival_queue[arrival_queue > 0]
+    total_arriving <- length(arrival_queue[arrival_queue == 0])
+    #print(total_arriving)
     
-    new_arrivals_to_queue <- length(arrival_queue) - length(new_arrival_queue)
-    waiting <- waiting + new_arrivals_to_queue
+    # Determining the rest of the arrival queue (who are yet to come)
+    arrival_queue <- arrival_queue[arrival_queue > 0]
     
-    arrival_queue <- new_arrival_queue
+    # Add to waiting queue and adding a timer
+    if(total_arriving > 0) {
+      waiting_queue <- append(waiting_queue, rep_len(T, total_arriving))
+      waiting_queue_timers <- append(waiting_queue_timers, rep_len(0, total_arriving))
+    } 
     
     ### DISPATCHING
     #print("DISPATCHING")
     
     # Before dispatching, check servers availability and how many are waiting
     # Only dispatch if there is at least one server available
-    while(server_available(sim_servers = sim_servers) && waiting > 0) {
+    while(server_available(sim_servers = sim_servers) && length(waiting_queue) > 0) {
       sim_servers <- dispatch(sim_servers = sim_servers)
-      waiting <- waiting - 1
+      
+      # Pop waiting_queue and increased the total attended people
+      total_attended <- total_attended + 1
+      waiting_queue <- waiting_queue[-1]
+      
+      # Pop waiting_queue_timers and adding the first most waiting time to the total
+      # waiting time counter
+      total_waiting_time <- total_waiting_time + waiting_queue_timers[1]
+      waiting_queue_timers <- waiting_queue_timers[-1]
     }
     
-    # Filling dataframe
     dataset[nrow(dataset) + 1, ] = c(
-      minute, 
+      minute,
       sum(sim_servers@available == T),
       paste(sim_servers@timers, collapse=" "),
-      waiting,
-      new_arrivals_to_queue, 
+      total_attended,
+      total_waiting_time,
+      length(waiting_queue),
       next_arrival + minute
     )
     
@@ -178,9 +204,15 @@ simulation_queue_size <- function(day, servers=3) {
   
   return(dataset)
 }
+
+simulation_day_queue_size(day=1, servers =3)
 ```
+
 
 ```{r}
-View(simulation_queue_size(day = 1, servers = 3))
 ```
 
+
+Si no se quiere que un cliente esté más de Y  minutos en cola, ¿cuántos agentes tiene que tener el banco? Considere n servidores (Cola infinita)
+
+Como una restricción extra el banco no puede tener en cola más de K  personas. Cuántas personas no son aceptadas en promedio por día al banco. Considere n servidores (Cola Finita)
