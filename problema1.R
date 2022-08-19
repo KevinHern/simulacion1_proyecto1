@@ -76,14 +76,14 @@ simulation_queue_size <- function(day, servers=3) {
   arrival_times <- c(0, 1, 2, 3, 4, 5, 6)
   arrival_probabilities <- day_probabilities(day=day)
   
-  total_minutes <- 60 # 8 hours shift per day
+  total_minutes <- 480 # 8 hours shift per day
   
   # Pivot variables
   minute <- 1
   
   # Generating Data Frame
-  dataset <- data.frame(matrix(ncol = 4, nrow = 0))
-  colnames(dataset) <- c("minute", "servers_available", "waiting", "next_arrival")
+  dataset <- data.frame(matrix(ncol = 6, nrow = 0))
+  colnames(dataset) <- c("minute", "servers_available", "dispatching_time", "in_waiting_queue", "new_arrival", "next_arrival")
   
   # Simulation variables
   waiting <- 0
@@ -122,11 +122,17 @@ simulation_queue_size <- function(day, servers=3) {
     # Ignore otherwise
     next_arrival <- NA
     if(!is.na(match(0, arrival_queue))){
-      # Determining when is the next person arriving
-      next_arrival <- sample(arrival_times, 1, prob = arrival_probabilities)
-      
-      # Adding the person to arrival_queue
-      arrival_queue <- append(arrival_queue, next_arrival)
+      repeat{
+        # Determining when is the next person arriving
+        next_arrival <- sample(arrival_times, 1, prob = arrival_probabilities)
+        
+        # Adding the person to arrival_queue
+        arrival_queue <- append(arrival_queue, next_arrival)
+        
+        if(next_arrival > 0) {
+          break
+        }
+      }
     }
     
     ### ARRIVING AND WAITING
@@ -135,7 +141,8 @@ simulation_queue_size <- function(day, servers=3) {
     # Increasing the waiting counter if some counters in arrival_queue have reached 0
     new_arrival_queue <- arrival_queue[arrival_queue > 0]
     
-    waiting <- waiting + (length(arrival_queue) - length(new_arrival_queue))
+    new_arrivals_to_queue <- length(arrival_queue) - length(new_arrival_queue)
+    waiting <- waiting + new_arrivals_to_queue
     
     arrival_queue <- new_arrival_queue
     
@@ -153,7 +160,9 @@ simulation_queue_size <- function(day, servers=3) {
     dataset[nrow(dataset) + 1, ] = c(
       minute, 
       sum(sim_servers@available == T),
+      paste(sim_servers@timers, collapse=" "),
       waiting,
+      new_arrivals_to_queue, 
       next_arrival + minute
     )
     
