@@ -24,27 +24,47 @@ shinyUI(fluidPage(
                         ),
                         mainPanel(
                           plotOutput('problem1plot'),
-                          verbatimTextOutput("problem1info")
                         )
                       )
              ),
-             tabPanel('plot',
+             tabPanel('Problema 2',
                       sidebarLayout(
                         sidebarPanel(
-                          sliderInput('N2', label = 'Tamaño del Grupo:',
-                                      min = 5,
-                                      max=150,
-                                      value = 20,
-                                      step = 1),
-                          numericInput('n2',label = "Numero de persona la misma fecha de cumpleaños:",
-                                       value = 2,step = 1),
-                          sliderInput('range_nsim',label = 'Rango simulacion',
-                                      value = c(500,2000),min=10,max=5000),
-                          numericInput('step',label = 'Step',value = 500),
+                          numericInput('time_limit',label = 'Tiempo de espera máximo (minutos)',
+                                       value = 15,
+                                       min=1, 
+                                       step = 1),
+                          numericInput('nsim2',label = 'Numero de simulaciones:',
+                                       value = 5,
+                                       min=1, 
+                                       step = 1),
                           submitButton('Aplicar cambios')
                         ),
-                        mainPanel(plotOutput('plotxy'))
-                        
+                        mainPanel(
+                          plotOutput('problem2plot'),
+                        )
+                      )
+             ),
+             tabPanel('Problema 3',
+                      sidebarLayout(
+                        sidebarPanel(
+                          numericInput('queue_limit',label = 'Tamaño máximo de la cola',
+                                       value = 15,
+                                       min=1, 
+                                       step = 1),
+                          numericInput('servers',label = 'Número máximo de servidores',
+                                       value = 10,
+                                       min=1, 
+                                       step = 1),
+                          numericInput('nsim3',label = 'Numero de simulaciones:',
+                                       value = 5,
+                                       min=1, 
+                                       step = 1),
+                          submitButton('Aplicar cambios')
+                        ),
+                        mainPanel(
+                          plotOutput('problem3plot'),
+                        )
                       )
              )
   )
