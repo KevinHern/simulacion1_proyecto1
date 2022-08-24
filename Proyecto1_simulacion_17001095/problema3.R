@@ -1,6 +1,6 @@
 source("utilities.R")
 
-simulation_day <- function(day, servers=3, queue_limit=10) {
+p3_simulation_day <- function(day, servers=3, queue_limit=10) {
   # Defining constants
   mean_attendance <- 8
   stdev_attendance <- 5
@@ -137,7 +137,7 @@ simulation_day <- function(day, servers=3, queue_limit=10) {
 
 #View(simulation_day(day = 1, servers = 1, queue_limit = 10))
 
-simulate_week <- function(index, server=3, queue_limit=10){
+p3_simulate_week <- function(index, server=3, queue_limit=10){
   # Initializing constants
   total_days <- 7
   
@@ -145,7 +145,7 @@ simulate_week <- function(index, server=3, queue_limit=10){
   
   # Running simulation
   week_summary <- sapply(days,
-                         simulation_day,
+                         p3_simulation_day,
                          servers=server,
                          queue_limit=queue_limit
   )
@@ -181,7 +181,7 @@ simulation_problem_three <- function(nsim, servers, queue_limit) {
   repeat{
     simulation_results <- sapply(
       simulations,
-      simulate_week,
+      p3_simulate_week,
       server=no_servers,
       queue_limit=queue_limit
     )

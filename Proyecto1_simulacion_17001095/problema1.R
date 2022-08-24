@@ -1,6 +1,6 @@
 source("utilities.R")
 
-simulation_day_queue_size <- function(day, servers=3) {
+p1_simulation_day_queue_size <- function(day, servers=3) {
   # Defining constants
   mean_attendance <- 8
   stdev_attendance <- 5
@@ -109,7 +109,7 @@ simulation_day_queue_size <- function(day, servers=3) {
   return(total_waiting)
 }
 
-simulate_week <- function(server){
+p1_simulate_week <- function(server){
   # Initializing constants
   total_days <- 7
   
@@ -117,7 +117,7 @@ simulate_week <- function(server){
   
   # Running simulation
   weekly_waiting_queue_size <- sapply(days,
-         simulation_day_queue_size,
+          p1_simulation_day_queue_size,
          servers=server
   )
   
@@ -129,14 +129,14 @@ simulate_week <- function(server){
 
 # View(simulate_week(server=1))
 
-simulate_week_server<- function(index) {
+p1_simulate_week_server<- function(index) {
   # Initializing constants
   total_servers <- 7
   
   servers <- c(1:total_servers)
   
   # Running Simulation
-  weekly_queue_size_per_server <- sapply(servers, simulate_week)
+  weekly_queue_size_per_server <- sapply(servers, p1_simulate_week)
   
   return(weekly_queue_size_per_server)
   
@@ -149,7 +149,7 @@ simulation_problem_one <- function(nsim) {
   simulations <- c(1:nsim)
   
   # Running simulations
-  weekly_queue_size_per_server_per_simulation <- sapply(simulations, simulate_week_server)
+  weekly_queue_size_per_server_per_simulation <- sapply(simulations, p1_simulate_week_server)
   
   # Reconstructing dataframe
   fixed_dataset <- as.data.frame(t(weekly_queue_size_per_server_per_simulation))
@@ -177,4 +177,4 @@ simulation_problem_one <- function(nsim) {
   )
 }
 
-View(simulation_problem_one(nsim = 3))
+#View(simulation_problem_one(nsim = 3))

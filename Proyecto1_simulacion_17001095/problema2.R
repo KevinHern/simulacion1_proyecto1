@@ -1,6 +1,6 @@
 source("utilities.R")
 
-simulation_day_time_limit <- function(day, servers=3) {
+p2_simulation_day_time_limit <- function(day, servers=3) {
   # Defining constants
   mean_attendance <- 8
   stdev_attendance <- 5
@@ -141,7 +141,7 @@ simulation_day_time_limit <- function(day, servers=3) {
 
 # View(simulation_day_time_limit(day=1, servers =3))
 
-simulate_week <- function(index, server=3){
+p2_simulate_week <- function(index, server=3){
   # Initializing constants
   total_days <- 7
   
@@ -149,7 +149,7 @@ simulate_week <- function(index, server=3){
   
   # Running simulation
   week_summary <- sapply(days,
-                        simulation_day_time_limit,
+                         p2_simulation_day_time_limit,
                         servers=server
   )
   
@@ -186,7 +186,7 @@ simulation_problem_two <- function(nsim, time_limit) {
     # Running simulation with N servers
     simulation_results_with_given_server_number <- sapply(
       simulations,
-      simulate_week,
+      p2_simulate_week,
       server=servers
     )
     
@@ -225,4 +225,4 @@ simulation_problem_two <- function(nsim, time_limit) {
   }
 }
 
-View(simulation_problem_two(nsim = 10, time_limit=15))
+#View(simulation_problem_two(nsim = 10, time_limit=15))
