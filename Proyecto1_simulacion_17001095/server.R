@@ -7,20 +7,35 @@
 #    http://shiny.rstudio.com/
 #
 
+source("problema1.R")
 library(shiny)
+library(ggplot2)
 
 # Define server logic required to draw a histogram
 shinyServer(function(input, output) {
 
-    output$distPlot <- renderPlot({
+    output$problem1plot <- renderPlot({
 
-        # generate bins based on input$bins from ui.R
-        x    <- faithful[, 2]
-        bins <- seq(min(x), max(x), length.out = input$bins + 1)
+        # Do simulations
+        average_waiting_time <- simulation_problem_one(nsim=input$nsim)
 
-        # draw the histogram with the specified number of bins
-        hist(x, breaks = bins, col = 'darkgray', border = 'white')
-
+        # plot
+        servers <- c(1:7)
+        
+        dataset <- data.frame(servers, average_waiting_time)
+        ggplot(dataset, aes(x=servers, average_waiting_time)) +
+          geom_col(fill="steelblue") +
+          labs(
+            x="Número de Servidores",
+            y="Tiempo Promedio (minutos)",
+            title="Tiempo Promedio de Espera vs No. Servidores"
+          ) + 
+          geom_text(
+            aes(label=sprintf("%0.2f", round(average_waiting_time, digits = 2))),
+            vjust=-0.3,
+            color="black",
+            size=6
+          ) +
+          theme_minimal()
     })
-
 })

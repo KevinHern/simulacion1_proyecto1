@@ -12,22 +12,40 @@ library(shiny)
 # Define UI for application that draws a histogram
 shinyUI(fluidPage(
 
-    # Application title
-    titlePanel("Old Faithful Geyser Data"),
-
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30)
-        ),
-
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
-        )
-    )
+  navbarPage(title='Proyecto 1 - 17001095',
+             tabPanel('Problema 1',
+                      sidebarLayout(
+                        sidebarPanel(
+                          numericInput('nsim',label = 'Numero de simulaciones:',
+                                       value = 5,
+                                       min=1, 
+                                       step = 1),
+                          submitButton('Aplicar cambios')
+                        ),
+                        mainPanel(
+                          plotOutput('problem1plot'),
+                          verbatimTextOutput("problem1info")
+                        )
+                      )
+             ),
+             tabPanel('plot',
+                      sidebarLayout(
+                        sidebarPanel(
+                          sliderInput('N2', label = 'Tamaño del Grupo:',
+                                      min = 5,
+                                      max=150,
+                                      value = 20,
+                                      step = 1),
+                          numericInput('n2',label = "Numero de persona la misma fecha de cumpleaños:",
+                                       value = 2,step = 1),
+                          sliderInput('range_nsim',label = 'Rango simulacion',
+                                      value = c(500,2000),min=10,max=5000),
+                          numericInput('step',label = 'Step',value = 500),
+                          submitButton('Aplicar cambios')
+                        ),
+                        mainPanel(plotOutput('plotxy'))
+                        
+                      )
+             )
+  )
 ))
